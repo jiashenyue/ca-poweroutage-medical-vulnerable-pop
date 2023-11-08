@@ -2,6 +2,7 @@
 
 Shenyue Jia, Matt Kiang
 
+
 A work of [CrisisReady](https://www.crisisready.io/) team
 
 Data and scripts for California 2019 power outage and medically vulnerable population analysis
