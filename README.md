@@ -1,4 +1,4 @@
-# ca-poweroutage-medical-vulnerable-pop
+# Power outages in 2019, California and the impact on medically vulnerable populations
 Data and scripts for California 2019 power outage and medically vulnerable population analysis
 
 ## Data for analysis
