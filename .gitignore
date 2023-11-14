@@ -47,3 +47,5 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+data_private/POUS_Export_Stanford_CityByUtility_Raw_California_20171201-20191031.csv
+data_private/POUS_Export_Stanford_CityByUtility_Raw_California_20191101-20191231.csv
