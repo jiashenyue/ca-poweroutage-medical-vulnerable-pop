@@ -5,9 +5,7 @@ output: html_notebook
 
 Shenyue Jia
 
-This note book shows how to convert the original dataset purchased from poweroutage.us to long forms by county and city.
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*.
+This notebook shows how to convert the original dataset purchased from poweroutage.us to long forms by county and city.
 
 ```{r setup, warning=FALSE}
 # loading libraries
@@ -27,7 +25,7 @@ rm(list = ls())
 
 Bind two files together.
 
-```{r setup, warning=FALSE}
+```{r}
 ca_data <- bind_rows(
   read_csv(
     here(
