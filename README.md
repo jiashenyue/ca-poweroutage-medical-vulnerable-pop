@@ -1,7 +1,5 @@
 # Power outages in 2019, California and the impact on medically vulnerable populations
 
-Shenyue Jia, Matt Kiang
-
 
 A work of [CrisisReady](https://www.crisisready.io/) team
 
@@ -25,19 +23,29 @@ Data and scripts for California 2019 power outage and medically vulnerable popul
     - [U.S. Census TIGER](https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html)
 
 ## Analysis conducted
-- Identifying power outage events at different lengths
-  - 1-8 hours, 9-24 hours, 24+ hours
-  - Code
-- Calculating the number of customers who experienced power outage events at different lengths
-  - Code 
+- Convert the original poweroutage.us data to long form
+  - [Code](https://github.com/jiashenyue/ca-poweroutage-medical-vulnerable-pop/blob/main/code/00_long_form_data_gen.nb.html)
+- Identifying power outage events at different lengths and calculate the numbers of customers affected
+  - [Code](https://github.com/jiashenyue/ca-poweroutage-medical-vulnerable-pop/blob/main/code/01_generate_outage_events.nb.html)
 - Creating a bi-variate map showing
-  1. the % of customers who experienced at least one 24+ hours power outage event
+  1. the % of customers who experienced at least one extreme power outage event
   2. % of DME users out of total population
-  - Code
-- Creating a bi-variate map showing
-  1. the % of customers who experienced at least one 24+ hours power outage event
+  - [Code](https://github.com/jiashenyue/ca-poweroutage-medical-vulnerable-pop/blob/main/code/04_bivariate_county_map.nb.html)
+- Creating a scatterplot showing
+  1. the % of customers who experienced at least one extreme hour power outage event
+  2. % of DME users out of total population
+  - [Code](https://github.com/jiashenyue/ca-poweroutage-medical-vulnerable-pop/blob/main/code/05_scatterplot_extreme_events_medically_vulnerables.nb.html)
+- Creating a scatterplot showing
+  1. the % of customers who experienced at least one extreme power outage event
   2. the % of people under 200% Federal Poverty Line (FPL)
+  - [Code](https://github.com/jiashenyue/ca-poweroutage-medical-vulnerable-pop/blob/main/code/06_scatterplot_extreme_events_low_income.nb.html)
 
 ## Result data
-- Data for Exhibit 1
-- Data for Exhibit 2
+- All power outage events in California, 2019
+  - [CSV file](https://github.com/jiashenyue/ca-poweroutage-medical-vulnerable-pop/blob/main/result/power-outage-events/ca_pct_household_oop_new_def.csv)
+- Esri Shapefiles of power outage events by county
+  - [Folder](https://github.com/jiashenyue/ca-poweroutage-medical-vulnerable-pop/tree/main/result/shapefile-power-outage-diff-length)
+
+## Sample exhibits
+
+![image](https://github.com/jiashenyue/ca-poweroutage-medical-vulnerable-pop/blob/main/plot/01_bivariate_map.png)
