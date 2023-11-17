@@ -3,7 +3,7 @@
 
 A work of [CrisisReady](https://www.crisisready.io/) team
 
-Data and scripts for California 2019 power outage and medically vulnerable population analysis
+Data and scripts for California 2019 power outage and medically vulnerable population analysis.
 
 ## Data for analysis
 - Data of customers out of power
