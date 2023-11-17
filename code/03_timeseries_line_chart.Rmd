@@ -1,0 +1,311 @@
+---
+title: "Time series of customer experiencing an power outage in California (2019)"
+author: Shenyue Jia
+output: html_notebook
+---
+
+This notebook plots a time series of the number of customers experiencing a power outage (affecting 0.5% total customers) in California in 2019. Also, this notebook produced a close-up look at two major events when PSPS concurrently occurs with a major wildfire.
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(zoo)
+library(foreign)
+library(here)
+library(purrr)
+library(lubridate)
+library(ggthemes)
+library(viridis)
+library(classInt)
+library(hrbrthemes)
+```
+
+```{r}
+rm(list = ls())
+```
+
+# Data preparation
+
+- Read county-level RDS file for customer who experienced power outage time series
+
+```{r}
+rm(list = ls())
+if(any(grepl("package:plyr", search()))) detach("package:plyr",unload = TRUE) else message("plyr not loaded")
+
+ca_outage_df_hour <- readRDS(here("data_private",
+                                  "ca_outage_customers_state_2019_10min.RDS"))
+
+```
+
+- Read RDS for top 10 fires and top 10 PSPS
+- Test if the pct of customers out of power can be correctly calculated
+```{r message=FALSE, warning=FALSE}
+top10_fire_df <- readRDS(here("data_private",
+                              "ca_2019_top10_fire.RDS"))
+
+top10_psps_df <- readRDS(here("data_private",
+                              "ca_2019_top10_psps.RDS"))
+
+top10_fire_df$Start <- as_date(top10_fire_df$Start)
+top10_fire_df$End <- as_date(top10_fire_df$End)
+top10_psps_df$Start <- as_date(top10_psps_df$Start)
+top10_psps_df$End <- as_date(top10_psps_df$End)
+```
+
+- Expand top 10 fire df and top psps df to a time series
+- The time series shares the same X-axis with the power outage dataframe
+```{r}
+date_stamp <- seq(as.Date("2019-01-01"), length = 365, by = "days")
+
+fire_psps_df <- as.data.frame(date_stamp)
+fire_psps_df$FireFlag <- -0.0001
+fire_psps_df$PSPSFlag <- -0.0001
+
+for (i in 1:nrow(top10_fire_df)){
+  
+  curr_start <- top10_fire_df$Start[i]
+  curr_end <- top10_fire_df$End[i]
+  
+  curr_start_row <- which(fire_psps_df$date_stamp == curr_start)
+  curr_end_row <- which(fire_psps_df$date_stamp == curr_end)
+  
+  fire_psps_df$FireFlag[curr_start_row:curr_end_row] <- -1
+  
+  
+}
+
+for (i in 1:nrow(top10_psps_df)){
+  
+  curr_start <- top10_psps_df$Start[i]
+  curr_end <- top10_psps_df$End[i]
+  
+  curr_start_row <- which(fire_psps_df$date_stamp == curr_start)
+  curr_end_row <- which(fire_psps_df$date_stamp == curr_end)
+  
+  fire_psps_df$PSPSFlag[curr_start_row:curr_end_row] <- -1
+  
+  
+}
+
+```
+
+## Aggregate data from 10-min to hours
+
+```{r}
+
+ca_outage_df_hour <- ca_outage_df_hour %>%
+  mutate(year = year(date),
+         month = month(date),
+         day = day(date),
+         hour = hour(date),
+         date = ymd_hm(paste0(year,"-",month,"-",day," ",hour,":00"))) %>%
+  group_by(date) %>%
+  summarise(CustomersOutState = max(CustomersOutState),
+         CustomerMinutesState = sum(CustomerMinutesState),
+         TotalHUState = first(TotalHUState),
+         PctCustomerOutState = max(PctCustomerOutState))
+
+```
+
+
+# Plot time series
+
+- Set up plotting theme
+
+```{r}
+# theme_new <- theme_set(theme_bw(base_family = "Helvetica"))
+theme_new <- theme_set(theme_bw(base_family = "Arial Narrow"))
+theme_new <- theme_update(
+  legend.text = element_text(size = 10),
+  axis.text = element_text(size = 8),
+  axis.title = element_text(size = 10),
+  plot.title = element_text(size = 12, face = "bold"),
+  axis.title.x = element_blank())
+
+```
+
+- Prepare a function to create beautiful breaks
+```{r}
+  caculate_class <- function(var,nclass){
+    # library(plyr)
+    class_brks <- classIntervals(var, n = nclass,intervalClosure = "left",
+                                 style = "pretty")
+    # class <- round_any(class_brks$brks,5)
+    class <- class_brks$brks
+    
+    return(class)
+  }
+```
+
+- Plot the time series for 2019
+
+```{r warning=FALSE}
+breaks <- as.POSIXct(c("2019-01-01 00:00:00",
+                                         "2019-02-01 00:00:00",
+                                         "2019-03-01 00:00:00",
+                                         "2019-04-01 00:00:00",
+                                         "2019-05-01 00:00:00",
+                                         "2019-06-01 00:00:00",
+                                         "2019-07-01 00:00:00",
+                                         "2019-08-01 00:00:00",
+                                         "2019-09-01 00:00:00",
+                                         "2019-10-01 00:00:00",
+                                         "2019-11-01 00:00:00",
+                                         "2019-12-01 00:00:00"))
+
+ca_outage_df_hour %>%
+  ggplot(aes(x=date,y=CustomersOut))+
+    geom_step(data = ca_outage_df_hour, aes(x = date, y = CustomersOutState),
+            size = 0.4,color = "grey20") +
+  # scale_x_datetime(date_breaks = "months" ,
+  #                  date_labels = "%b-%d") +
+  scale_x_datetime(breaks = breaks,
+                   labels = format(breaks,"%b-%d"))+
+  scale_y_continuous(
+    breaks = caculate_class(ca_outage_df_hour$CustomersOutState, 5),
+    labels = format(
+      caculate_class(ca_outage_df_hour$CustomersOutState, 5)/1000000),
+    sec.axis = sec_axis( trans=~./first(ca_outage_df_hour$TotalHUState)*100, 
+                         name="% out of Total Housing Units")
+
+  ) +
+  labs(y = "Customers Out of Power (millions)")+
+  # ggtitle("")+
+  theme_ipsum()+
+    theme(legend.position="bottom",
+          axis.title.x = element_blank(),
+          plot.title = element_text(size = 12, face = "bold")) -> p1
+  
+
+p1
+```
+- Add top 10 PSPS events and wildfires in 2019 to the time series
+
+p: Y axis = number of customers experienced loss of power
+```{r warning=FALSE}
+fire_psps_df$date_stamp <- as.POSIXct(fire_psps_df$date_stamp,
+                                     format = "%Y-%m-%d %H:%M:%S")
+colors <- c("Fire" = "#FC4E07", "PSPS" = "#00AFBB")
+
+p <- ggplot() +
+      geom_rect(
+    data = top10_fire_df,
+    aes(
+      xmin = as_datetime(Start),
+      xmax = as_datetime(End),
+      ymin = 0,
+      ymax = max(ca_outage_df_hour$CustomersOutState),
+      fill = "Fire"),
+    color = NA,
+    alpha = .2
+  )+
+    geom_rect(
+    data = top10_psps_df,
+    aes(
+      xmin = as_datetime(Start),
+      xmax = as_datetime(End),
+      ymin = 0,
+      ymax = max(ca_outage_df_hour$CustomersOutState),
+      fill = "PSPS"
+    ),
+    color = NA,
+    alpha = .4
+  )+
+  scale_fill_manual("Event",values = colors,labels = c("Top 10 Wildfires","Top 10 PSPS Events"))+
+  geom_step(data = ca_outage_df_hour, aes(x = date, y = CustomersOutState),
+            size = 0.4,color = "grey20") +
+  # scale_x_datetime(date_breaks = "months" ,
+  #                  date_labels = "%b-%d") +
+  scale_x_datetime(breaks = breaks,
+                   labels = format(breaks,"%b-%d"))+
+  scale_y_continuous(
+    breaks = caculate_class(ca_outage_df_hour$CustomersOutState, 5),
+    labels = format(
+      caculate_class(ca_outage_df_hour$CustomersOutState, 5)/1000000),
+    sec.axis = sec_axis( trans=~./first(ca_outage_df_hour$TotalHUState)*100, 
+                         name="% out of Total Housing Units")
+
+  ) +
+  labs(y = "Customers Out of Power (millions)")+
+  ggtitle("Year of 2019")+
+  theme_ipsum()+
+  # theme_new()+
+    theme(legend.position="bottom",
+          axis.title.x = element_blank(),
+          plot.title = element_text(size = 12, face = "bold"))
+
+
+
+
+p
+```
+- Save plot `p` as an external file
+
+```{r}
+ggsave(
+  here("plot", "02_ca_outage_timeseries.png"),
+  plot = p,
+  width = 8,
+  height = 4,
+  # dpi = 200,
+  scale = 1
+)
+
+```
+
+# Plot two large events in 2019
+
+- Major Peak 2: PSPS + Kincade Fire (2019-10-23 to 2019-11-10)
+```{r}
+p2 <- ggplot(subset(ca_outage_df_hour,date>=top10_fire_df$Start[1] & date<= top10_fire_df$End[1]), 
+       aes(x=date, y=CustomersOutState)) + 
+    geom_step() +
+    scale_y_continuous(breaks = caculate_class(ca_outage_df_hour$CustomersOutState,5),
+                       labels = format(round(caculate_class(ca_outage_df_hour$CustomersOutState,5)/1000000,1)),
+                       sec.axis = sec_axis( trans=~./first(ca_outage_df_hour$TotalHUState)*100, 
+                                            name="% out of Total Housing Units"))+
+    scale_x_datetime(date_breaks = "4 day" , date_labels = "%b-%d")+
+    labs(x = "Time", y = "Customers lost power (million)")+
+    ggtitle("Major Peak 2\nPSPS + Kincade Fire (10/23-11/10,2019)")+
+    theme_ipsum()+
+  # theme_bw()+
+    theme(axis.title.x = element_blank(),
+          plot.title = element_text(size = 10, face = "bold"))
+p2
+```
+- Major peak 1: PSPS + Saddleback Fire (2019-10-10 to 2019-10-31)
+
+```{r}
+p3 <- ggplot(subset(ca_outage_df_hour,date>="2019-10-07" & date<= "2019-10-13"), 
+       aes(x=date, y=CustomersOutState)) + 
+    geom_step() +
+    scale_y_continuous(breaks = caculate_class(ca_outage_df_hour$CustomersOutState,5),
+                       labels = format(round(caculate_class(ca_outage_df_hour$CustomersOutState,5)/1000000,1)),
+                       sec.axis = sec_axis( trans=~./first(ca_outage_df_hour$TotalHUState)*100,
+                                            name="% out of Total Housing Units"))+
+    scale_x_datetime(date_breaks = "2 day" , date_labels = "%b-%d")+
+    labs(x = "Time", y = "Customers lost power (million)")+
+    ggtitle("Major Peak 1\nPSPS + Saddleback Fire (10/10-10/26, 2019)")+
+        theme_ipsum()+
+  # theme_bw()+
+    theme(axis.title.x = element_blank(),
+          plot.title = element_text(size = 10, face = "bold"))
+p3
+```
+
+- Save to an external file
+
+```{r}
+library(patchwork)
+layout <- "AB"
+
+p_all <- p2 + p3 + plot_layout(design = layout)
+ggsave(
+  here("plot","03_two_major_events.png"),
+  p_all,
+  # device = cairo_pdf,
+  width = 10,
+  height = 4,
+  scale = 0.8
+)
+
+```

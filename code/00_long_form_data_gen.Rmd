@@ -1,9 +1,9 @@
 ---
 title: "Prepare long forms of power outage data"
+author: "Shenyue Jia"
 output: html_notebook
 ---
 
-Shenyue Jia
 
 This notebook shows how to convert the original dataset purchased from poweroutage.us to long forms by county and city.
 

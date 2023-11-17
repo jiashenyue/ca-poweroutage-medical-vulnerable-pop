@@ -1,9 +1,9 @@
 ---
 title: "Generate power outage events from long form data"
+author: "Shenyue Jia"
 output: html_notebook
 ---
 
-Shenyue Jia
 
 This notebook shows how to separate long form of time series into power outage events.
 Power outage event is defined as a power outage last longer than 10 min and affects more than 0.5% customers in the area of interest.

@@ -1,0 +1,134 @@
+---
+title: "Create a bar plot showing frequencies of dservice disruptions in California (2019)"
+author: Shenyue Jia
+output: html_notebook
+---
+
+This notebook plots a bar plot for power outage events at different lengths for Exhibit 2 in the manuscript.
+
+```{r setup, warning=FALSE}
+# loading libraries
+library(tidyverse)
+library(zoo)
+library(foreign)
+library(here)
+library(purrr)
+library(lubridate)
+library(ggthemes)
+library(viridis)
+library(classInt)
+library(hrbrthemes)
+library(ggridges)
+```
+
+```{r}
+rm(list = ls())
+```
+
+# Read California state-level aggregated data showing power outages
+
+- Get county-level power outage counts
+
+```{r}
+county_outage_df <- read_csv(here("result",
+                                  "ca_pct_household_oop_new_def.csv"))
+
+```
+
+- Add a Month column
+```{r message=FALSE, warning=FALSE}
+
+county_outage_df <- county_outage_df %>%
+    mutate(Month = factor(month(Start,label = TRUE)))
+
+```
+
+# Count power outage events at different lengths in CA
+
+- Create a data frame that contains a type field for disruptions based on duration
+    - 1-8 hrs
+    - 9-16 hrs
+    - 17-24 hrs
+    - 24+ hrs
+
+```{r message=FALSE, warning=FALSE}
+df_plot <- bind_rows(
+                    county_outage_df %>%
+                      filter(Duration >=60 & Duration<=8*60) %>%
+                      mutate(Type = "1-8 hrs"),
+                    county_outage_df %>%
+                      filter(Duration >8*60 & Duration<=16*60) %>%
+                      mutate(Type = "9-16 hrs"),
+                    county_outage_df %>%
+                      filter(Duration >16*60 & Duration<=24*60) %>%
+                      mutate(Type = "17-24 hrs"),
+                    county_outage_df %>%
+                      filter(Duration >24*60) %>%
+                      mutate(Type = "24+ hrs"))
+df_plot$Type <- as.factor(df_plot$Type)
+df_plot$Month <- as.factor(df_plot$Month)
+```
+
+# Plot results as stacked bar plot
+
+- Prepare a dataframe for bar plotting
+```{r message=FALSE, warning=FALSE}
+
+df_plot$Type <- factor(df_plot$Type,
+                                 levels=c("1-8 hrs","9-16 hrs","17-24 hrs","24+ hrs"))
+
+# extrafont::loadfonts()
+df_plot_count <- df_plot %>%
+  group_by(Month,Type) %>%
+  summarise(Count = n()) %>%
+  complete(Month,Type,fill=list(Count=0)) %>%
+  mutate(label = ifelse(Count==0,NA,Count))
+
+df_plot_count_first <- df_plot_count %>%
+  group_by(Month, Type) %>%
+  summarise(Month = first(Month),
+            Type = first(Type),
+            Count = first(Count),
+            label = first(label))
+```
+
+- Generate bar plot
+
+```{r message=FALSE, warning=FALSE}
+
+df_plot_count_first %>%
+  # ggplot(aes(x = Month,y=Count,fill=Type,group=Type)) +
+  ggplot(aes(x = Month,y=Count,fill=Type)) +
+  geom_col(position = position_stack(),width=0.5)+
+  scale_fill_manual(values=c("#CABED0", "#BC7C8F", "#AE3A4E","#330000"))+
+  scale_x_discrete(breaks = c("Jan","Feb","Mar","Apr","May","Jun","Jul",
+                              "Aug","Sep","Oct","Nov","Dec"),
+                   labels = c("Jan","Feb","Mar","Apr","May","Jun","Jul",
+                              "Aug","Sep","Oct","Nov","Dec 2019"))+
+  scale_y_continuous(labels=function(x) format(x, big.mark = ".", scientific = FALSE))+
+  guides(fill=guide_legend(title=element_blank()))+
+  # facet_wrap(~Type,ncol =1)+
+  # theme_ipsum() +
+  theme_bw()+
+    theme(
+      legend.position="bottom",
+      panel.spacing = unit(c(0,0,0,0), "mm"),
+      plot.margin = unit(c(0,0,0,0), "mm"),
+      axis.title.x = element_blank()
+    )+
+  # ggtitle("b) Major, severe, and extreme disruptions by starting months")+
+  labs(y="Monthly Frequency of power disruptions") -> plot
+plot
+```
+
+- Export the plot
+```{r}
+ggsave(
+  here("plot","02_barplot_outage_count_notrans_stacked.pdf"),
+  p3,
+  # device = cairo_pdf,
+  width = 6,
+  height = 3,
+  scale = 1
+)
+```

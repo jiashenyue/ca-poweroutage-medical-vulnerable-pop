@@ -1,0 +1,175 @@
+---
+title: "Relationship between extreme power outage events and medically vulnerable populations"
+author: Shenyue Jia
+output: html_notebook
+---
+
+This notebook creates a scatterplot showing the relationship between the extreme power outage events in California, 2019 and medically vulnerable populations, especially those who are users of durable medical equipment (DME) in California. Extreme power outage events are defined as a power outage lasts for more than 24 hours.
+
+```{r setup, include=FALSE}
+library(rstudioapi)
+library(tidyverse) # ggplot2, dplyr, tidyr, readr, purrr, tibble
+library(magrittr) # pipes
+library(lintr) # code linting
+library(sf) # spatial data handling
+library(viridis) # viridis color scale
+library(cowplot) # stack ggplots
+library(rmarkdown)
+library(here)
+library(hrbrthemes)
+library(ggExtra)
+```
+
+```{r}
+rm(list = ls())
+```
+
+# Data preparation
+
+- Prepare California county-level extreme outages and cumulatively % of affected households
+
+```{r}
+ca_outage <- read_csv(here("result", "ca_pct_household_oop_new_def.csv"))
+ca_outage_24plushrs <- ca_outage %>%
+  filter(Duration>24*60) %>%
+  group_by(County) %>%
+  summarise(SumPctHU = sum(PctHU)) %>%
+  complete(County,fill=list(SumPctHU=0))
+
+```
+
+- Prepare California county-level data from a pre-pared Shapefile
+    - County-level metrics from census
+    - County-level metrics from HHS emPOWER platform on DME users and Medicare beneficiaries
+    - County-level metrics from HRSA UDSMapper on healthcare resources availability
+
+```{r}
+
+ca_geo <- read_sf(here("data_private",
+                       "ca_county_census_empower_UDSMapper_combined.shp"))
+
+```
+
+# Clean variables and prepare normalized variables
+
+- Convert selected variables from `ca_geo` to normalized versions
+
+```{r}
+ca_geo_sub <- ca_geo %>%
+  mutate(pct_dme_medicare = round(dme/num_medi_2*100,2),
+         latitude = as.numeric(substr(INTPTLAT,2,nchar(INTPTLAT))),
+         longitude = as.numeric(INTPTLON)) %>%
+  select(STATEFP,COUNTYFP,GEOID,NAME,x_map,y_map,
+         SumMaxCust,pct_dme_medicare,TOTHU_CY_1) %>%
+  left_join(ca_outage_24plushrs,by=c("NAME"="County")) %>%
+  mutate(SumPctHU=ifelse(is.na(SumPctHU),0,SumPctHU))
+
+```
+
+# Visualization
+
+- Prepare a function to create beautiful breaks
+
+```{r}
+  calculate_class <- function(var,nclass,roundto){
+    class_brks <- classInt::classIntervals(var, n = nclass,intervalClosure = "left",
+                                 style = "equal")
+    class_brks <- class_brks$brks
+    class <- plyr::round_any(class_brks,roundto)
+    
+    return(class)
+  }
+```
+
+- Annotate counties with both metrics high
+
+```{r}
+ca_geo_sub$label <- NA
+ca_geo_sub %<>%
+  mutate(label = ifelse(SumPctHU>0.15 & 
+                          pct_dme_medicare>5.5,NAME,NA))
+
+```
+
+- Add fill color for labels by region
+```{r}
+ca_region <- 
+  read_csv(here("data_private","california_regions.csv")) %>%
+    mutate(NAME = substr(COUNTY, 1, nchar(COUNTY)-nchar(" County")))
+```
+
+- Setup colors for regions
+```{r}
+#reg_hex_code <- c("#FCB0AF","#F8F892","#EB984E","#C2E5A4","#66B460","#AED6F1")
+reg_hex_code_2 <- c("#C2E5A4","#66B460","#FCB0AF","#F8F892","#EB984E","#AED6F1")
+
+```
+
+Join the region color to ca_geo_sub
+```{r}
+
+ca_geo_sub <- left_join(ca_geo_sub, ca_region,by="NAME") %>%
+  mutate(bold_label = ifelse(label %in% c("Plumas","Shasta","Butte","Tehama","Sierra"),
+                       label,NA),
+    label = ifelse(label %in% c("Plumas","Shasta","Butte","Tehama","Sierra"),
+                       NA,label))
+
+```
+
+- Create a scatterplot with selected counties labeled
+```{r}
+
+scatterplot <- 
+            ggplot(data = ca_geo_sub,
+                aes(
+                    x = SumPctHU,
+                    y = pct_dme_medicare
+                )
+            ) + 
+              theme_ipsum()+
+              theme(panel.border = element_rect(linetype = "solid", fill = NA),
+                    axis.text.x = element_text(size=10),
+                    axis.text.y = element_text(size=10),
+                    axis.title.x = element_text(size=12),
+                    axis.title.y = element_text(size=12),
+                    plot.margin = unit(c(0, 0, 0, 0), "cm"))+
+              geom_point(alpha = .6, aes(size=TOTHU_CY_1)) +
+              ggrepel::geom_label_repel(
+                aes(label = label,fill=REGION),nudge_x = .2,nudge_y = .2,
+                min.segment.length = .2, size = 3, alpha = 0.8)+
+              ggrepel::geom_label_repel(
+                aes(label = bold_label,fill=REGION),fontface = 'bold',
+                nudge_x = .2,nudge_y = .2,
+                min.segment.length = .2, size = 3, alpha = 0.8)+
+                scale_size_continuous(name = "Households (K)", breaks = 
+                          calculate_class(ca_geo_sub$TOTHU_CY_1,5,10000),
+                        labels=formatC(calculate_class(ca_geo_sub$TOTHU_CY_1,5,10000)/1000,
+                big.mark=","))+
+                # scale_color_identity() +
+              theme(legend.position = "bottom")+
+              guides(size=guide_legend(nrow = 2),
+                     fill=guide_legend(nrow = 2))+
+              scale_fill_manual(name = 'Region',
+                                values=reg_hex_code_2,
+                                breaks = c('North Central Region','Northern Region'))+
+                scale_x_continuous("Average number of power disruptions\na customer experienced in 2019",
+                                   breaks = c(0,calculate_class(ca_geo_sub$SumPctHU,4,10)),
+                                   labels = format(c(0,calculate_class(ca_geo_sub$SumPctHU,4,10))/100)) +
+                scale_y_continuous("% DME users in Medicare beneficiaries",
+                                   breaks = c(0,calculate_class(ca_geo_sub$pct_dme_medicare,4,5)),
+                                   labels = c(0,calculate_class(ca_geo_sub$pct_dme_medicare,4,5)))
+scatterplot
+```
+
+- Save the figure as a PDF
+
+```{r}
+ggsave(
+  here("plot", "05_scatter_extreme_poweroutage_emPOWER_nodist.png"),
+  plot = scatterplot,
+  width = 7,
+  height = 5,
+  # dpi = 200,
+  scale = 1
+)
+```
