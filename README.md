@@ -41,6 +41,8 @@ Data and scripts for California 2019 power outage and medically vulnerable popul
   - [Code](https://github.com/jiashenyue/ca-poweroutage-medical-vulnerable-pop/blob/main/code/06_scatterplot_extreme_events_low_income.nb.html)
 
 ## Result data
+- Long-form time series of customers experiencing a power outage in counties of California, 2019
+  - Download data from [Zenodo](https://zenodo.org/records/10198709)
 - All power outage events in California, 2019
   - [CSV file](https://github.com/jiashenyue/ca-poweroutage-medical-vulnerable-pop/blob/main/result/power-outage-events/ca_pct_household_oop_new_def.csv)
 - Esri Shapefiles of power outage events by county
