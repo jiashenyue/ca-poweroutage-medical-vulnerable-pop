@@ -2,6 +2,8 @@
 title: "Relationship between extreme power outage events and medically vulnerable populations"
 author: Shenyue Jia
 output: html_notebook
+editor_options: 
+  chunk_output_type: inline
 ---
 
 This notebook creates a scatterplot showing the relationship between the extreme power outage events in California, 2019 and medically vulnerable populations, especially those who are users of durable medical equipment (DME) in California. Extreme power outage events are defined as a power outage lasts for more than 24 hours.
@@ -29,7 +31,8 @@ rm(list = ls())
 - Prepare California county-level extreme outages and cumulatively % of affected households
 
 ```{r}
-ca_outage <- read_csv(here("result", "ca_pct_household_oop_new_def.csv"))
+ca_outage <- read_csv(here("result", "power-outage-events",
+                           "ca_pct_household_oop_new_def.csv"))
 ca_outage_24plushrs <- ca_outage %>%
   filter(Duration>24*60) %>%
   group_by(County) %>%
@@ -126,7 +129,7 @@ scatterplot <-
                     y = pct_dme_medicare
                 )
             ) + 
-              theme_ipsum()+
+              theme_bw()+
               theme(panel.border = element_rect(linetype = "solid", fill = NA),
                     axis.text.x = element_text(size=10),
                     axis.text.y = element_text(size=10),
@@ -135,24 +138,28 @@ scatterplot <-
                     plot.margin = unit(c(0, 0, 0, 0), "cm"))+
               geom_point(alpha = .6, aes(size=TOTHU_CY_1)) +
               ggrepel::geom_label_repel(
-                aes(label = label,fill=REGION),nudge_x = .2,nudge_y = .2,
-                min.segment.length = .2, size = 3, alpha = 0.8)+
+                aes(label = label,fill=REGION),box.padding = 0.5,
+                nudge_x = .5,nudge_y =.5,
+                min.segment.length = .1, size = 3, alpha = 0.8)+
               ggrepel::geom_label_repel(
-                aes(label = bold_label,fill=REGION),fontface = 'bold',
-                nudge_x = .2,nudge_y = .2,
-                min.segment.length = .2, size = 3, alpha = 0.8)+
-                scale_size_continuous(name = "Households (K)", breaks = 
+                aes(label = bold_label,fill=REGION),box.padding = 0.5,
+                fontface = 'bold',
+                nudge_x = .5,nudge_y = .5,
+                min.segment.length = .1, size = 3, alpha = 0.8)+
+             scale_size_continuous(name = "Households (K)", breaks = 
                           calculate_class(ca_geo_sub$TOTHU_CY_1,5,10000),
-                        labels=formatC(calculate_class(ca_geo_sub$TOTHU_CY_1,5,10000)/1000,
+                labels=formatC(calculate_class(ca_geo_sub$TOTHU_CY_1,5,10000)/1000,
                 big.mark=","))+
                 # scale_color_identity() +
-              theme(legend.position = "bottom")+
+              theme(legend.position = "bottom",
+                    axis.title.x = element_text(hjust = 1),
+                    plot.margin = unit(c(2,2,2,2), "mm"))+
               guides(size=guide_legend(nrow = 2),
-                     fill=guide_legend(nrow = 2))+
+                     fill=guide_legend(nrow = 2,override.aes = aes(label = "")))+
               scale_fill_manual(name = 'Region',
                                 values=reg_hex_code_2,
                                 breaks = c('North Central Region','Northern Region'))+
-                scale_x_continuous("Average number of power disruptions\na customer experienced in 2019",
+                scale_x_continuous("Average number of power disruptions a customer experienced in 2019",
                                    breaks = c(0,calculate_class(ca_geo_sub$SumPctHU,4,10)),
                                    labels = format(c(0,calculate_class(ca_geo_sub$SumPctHU,4,10))/100)) +
                 scale_y_continuous("% DME users in Medicare beneficiaries",
@@ -161,11 +168,63 @@ scatterplot <-
 scatterplot
 ```
 
+- Try a different way of labeling using `geom_label`
+    - Add a new field with all labels regardless of `fontface`
+    - Add a new field `face` to set up `fontface`
+    
+```{r}
+ca_geo_sub <- ca_geo_sub %>%
+    mutate(face = ifelse(is.na(bold_label),'plain','bold'),
+           label_full = ifelse(is.na(bold_label),label,bold_label))
+```
+
+```{r}
+
+scatterplot <- 
+            ggplot(data = ca_geo_sub,
+                aes(
+                    x = SumPctHU,
+                    y = pct_dme_medicare
+                )
+            ) + 
+              ggrepel::geom_label_repel(
+                aes(label = label_full,fill=REGION,fontface = face),
+                box.padding = 0.5,
+                nudge_x = 1,nudge_y =1,
+                min.segment.length = .2, size = 3, alpha = 0.8)+
+    scale_size_continuous(name = "Households (K)", breaks = 
+                          calculate_class(ca_geo_sub$TOTHU_CY_1,5,10000),
+                labels=formatC(calculate_class(ca_geo_sub$TOTHU_CY_1,5,10000)/1000,
+                big.mark=","))+
+    geom_point(alpha = .6, aes(size=TOTHU_CY_1)) +
+                  theme_bw()+
+              theme(panel.border = element_rect(linetype = "solid", fill = NA),
+                    axis.text.x = element_text(size=10),
+                    axis.text.y = element_text(size=10),
+                    axis.title.x = element_text(size=12,hjust = 1),
+                    axis.title.y = element_text(size=12),
+                    plot.margin = unit(c(2,2,2,2), "mm"),
+                    legend.position = "bottom")+
+              guides(size=guide_legend(nrow = 2,order=1),
+                     fill=guide_legend(nrow = 2,order = 2,override.aes = aes(label = "")))+
+              scale_fill_manual(name = 'Region',
+                                values=reg_hex_code_2,
+                                breaks = c('North Central Region','Northern Region'))+
+                scale_x_continuous("Average number of extreme (24+ hrs) power disruptions\na customer experienced in 2019",
+                                   breaks = c(0,calculate_class(ca_geo_sub$SumPctHU,4,10)),
+                                   labels = format(c(0,calculate_class(ca_geo_sub$SumPctHU,4,10))/100)) +
+                scale_y_continuous("% DME users in Medicare beneficiaries",
+                                   breaks = c(0,calculate_class(ca_geo_sub$pct_dme_medicare,4,5)),
+                                   labels = c(0,calculate_class(ca_geo_sub$pct_dme_medicare,4,5)))
+scatterplot
+```
+
+
 - Save the figure as a PDF
 
 ```{r}
 ggsave(
-  here("plot", "05_scatter_extreme_poweroutage_emPOWER_nodist.png"),
+  here("plot", "05_scatter_extreme_poweroutage_emPOWER_nodist.pdf"),
   plot = scatterplot,
   width = 7,
   height = 5,

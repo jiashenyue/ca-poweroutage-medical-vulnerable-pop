@@ -151,8 +151,8 @@ bivariant_legend_plot <- function(bivariant_legend_df){
                 fill = fill)
         ) +
         scale_fill_identity() +
-        labs(x = "Customers affected (K)",
-             y = "Power disruptions")+
+        labs(x = "Customers\naffected (K)",
+             y = "Power\ndisruptions")+
         # theme_ipsum() +
         theme_bw()+
         # make font big enough
@@ -161,7 +161,7 @@ bivariant_legend_plot <- function(bivariant_legend_df){
             axis.text.y = element_text(size = 14),
             axis.title.x = element_text(size = 14),
             axis.title.y = element_text(size= 14),
-            plot.margin = unit(c(0,0,0,0), "cm")
+            plot.margin = unit(c(2,2,2,2), "mm")
             # axis.line = element_line(colour = "black", 
             #                     size = 1, linetype = "solid")
         ) +

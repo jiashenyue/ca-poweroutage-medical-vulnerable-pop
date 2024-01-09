@@ -2,6 +2,8 @@
 title: "Create a bar plot showing frequencies of dservice disruptions in California (2019)"
 author: Shenyue Jia
 output: html_notebook
+editor_options: 
+  chunk_output_type: inline
 ---
 
 This notebook plots a bar plot for power outage events at different lengths for Exhibit 2 in the manuscript.
@@ -30,7 +32,7 @@ rm(list = ls())
 - Get county-level power outage counts
 
 ```{r}
-county_outage_df <- read_csv(here("result",
+county_outage_df <- read_csv(here("result","power-outage-events",
                                   "ca_pct_household_oop_new_def.csv"))
 
 ```
@@ -81,6 +83,7 @@ df_plot$Type <- factor(df_plot$Type,
 df_plot_count <- df_plot %>%
   group_by(Month,Type) %>%
   summarise(Count = n()) %>%
+  ungroup() %>%
   complete(Month,Type,fill=list(Count=0)) %>%
   mutate(label = ifelse(Count==0,NA,Count))
 
@@ -113,11 +116,11 @@ df_plot_count_first %>%
     theme(
       legend.position="bottom",
       panel.spacing = unit(c(0,0,0,0), "mm"),
-      plot.margin = unit(c(0,0,0,0), "mm"),
+      plot.margin = unit(c(2,2,2,2), "mm"),
       axis.title.x = element_blank()
     )+
   # ggtitle("b) Major, severe, and extreme disruptions by starting months")+
-  labs(y="Monthly Frequency of power disruptions") -> plot
+  labs(y="Monthly frequency of power disruptions") -> plot
 plot
 ```
 
@@ -125,10 +128,10 @@ plot
 ```{r}
 ggsave(
   here("plot","02_barplot_outage_count_notrans_stacked.pdf"),
-  p3,
+  plot,
   # device = cairo_pdf,
-  width = 6,
-  height = 3,
+  width = 7,
+  height = 4,
   scale = 1
 )
 ```

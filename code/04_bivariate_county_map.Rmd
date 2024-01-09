@@ -2,6 +2,8 @@
 title: "Spatial patterns of wildfire-induced power outages at different lengths"
 author: Shenyue Jia
 output: html_notebook
+editor_options: 
+  chunk_output_type: inline
 ---
 
 This notebook produces a bivariate map showing the customers affected of each county and the number of wildfire-induced power outages at different length they may have experienced in 2019.
@@ -33,11 +35,14 @@ rm(list = ls())
     - Extreme: 5+ days
 
 ```{r warning=FALSE, message=FALSE}
-major_df <- read_sf(here("result","ca_county_power_disruption_major.shp"))
+major_df <- read_sf(here("result","shapefile-power-outage-diff-length",
+                         "ca_county_power_disruption_major.shp"))
 
-severe_df <- read_sf(here("result","ca_county_power_disruption_severe.shp"))
+severe_df <- read_sf(here("result","shapefile-power-outage-diff-length",
+                          "ca_county_power_disruption_severe.shp"))
 
-extreme_df <- read_sf(here("result","ca_county_power_disruption_extreme.shp"))
+extreme_df <- read_sf(here("result","shapefile-power-outage-diff-length",
+                           "ca_county_power_disruption_extreme.shp"))
 
 ```
 
@@ -86,8 +91,8 @@ severe_extreme_df %<>%
 ```{r}
 
 theme_map <- function(...) {
-  theme_ipsum()+
-  # theme_bw()+
+  # theme_ipsum()+
+  theme_bw()+
   theme(
     # text = element_text(family = default_font_family,
     #                     color = default_font_color),
@@ -110,7 +115,7 @@ theme_map <- function(...) {
       fill = NULL,
                                      color = NA),
     # borders and margins
-    plot.margin = unit(c(0,0,0,0), "cm"),
+    plot.margin = unit(c(2,2,2,2), "mm"),
     panel.border = element_blank(),
     panel.spacing = unit(c(0,0,0,0), "cm"),
     # titles
@@ -208,13 +213,15 @@ legend_major
 
 map_severe_extreme <- bivariant_map_plot(severe_extreme_df,
                                  "Power Disruptions\n(5+ days)")
+
+
 map_severe_extreme
 ```
 - For major events
 ```{r}
 
 map_major <- bivariant_map_plot(major_df,
-                                "Power Disruptions\n(1-5 days)")
+                                "Power Disruptions\n(1-5 Days)")
 map_major
 ```
 
@@ -229,11 +236,11 @@ p1_all <- cowplot::plot_grid(
   map_severe_extreme,
   ncol = 4,
   # rel_widths = c(2, 3, 3),
-  scale = c(0.8,1,0.7,1)
+  scale = c(1,1,1,1)
 )
 
 ggsave(
-  here("plot", "01_bivariate_map.png"),
+  here("plot", "01_bivariate_map.pdf"),
   plot = p1_all,
   width = 12,
   height = 6,
