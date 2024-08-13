@@ -1,0 +1,115 @@
+---
+title: "Classifying outage events by length"
+output: html_notebook
+---
+
+This notebook reads `ca_pct_household_oop_new_def.csv` and separate outage events at the county level of 2019 in California into the following categories:
+
+- Major: < 1 day
+- Severe: [1,3) days
+- Extreme: 3+ days
+
+## Read libraries
+```{r}
+library(tidyverse) # ggplot2, dplyr, tidyr, readr, purrr, tibble
+library(magrittr) # pipes
+library(sf) # spatial data handling
+library(rmarkdown)
+library(here)
+library(ggExtra)
+library(rgeoda)
+```
+
+## Clean work environment
+```{r}
+rm(list = ls())
+```
+
+## Read file with power outage events
+
+```{r}
+df_outage <- read_csv(here("result","power-outage-events",
+                           "ca_pct_household_oop_new_def.csv"))
+head(df_outage)
+```
+
+## Classify events by `Duration`
+
+- Remove very short outages (< 60 min)
+
+```{r}
+df_outage <- df_outage %>%
+    filter(Duration >= 60)
+```
+
+- Get major events (< 24 hours)
+
+```{r}
+major_outage <- df_outage %>%
+    filter(Duration < 60*24) %>%
+    group_by(County) %>%
+    summarise(Count = n(),
+              SumMaxCust = max(SegCustomerOut))
+```
+
+- Get severe events (1-3 days)
+
+```{r}
+severe_outage <- df_outage %>%
+    filter(Duration >= 60*24 & Duration <= 60*24*3) %>%
+    group_by(County) %>%
+    summarise(Count = n(),
+              SumMaxCust = max(SegCustomerOut))
+```
+
+- Get extreme events (1-3 days)
+
+```{r}
+extreme_outage <- df_outage %>%
+    filter(Duration > 60*24*3) %>%
+    group_by(County) %>%
+    summarise(Count = n(),
+              SumMaxCust = max(SegCustomerOut))
+```
+
+## Create a Shapefile for each outage type
+
+- Read a shell Shapefile for county boundaries
+
+```{r}
+ca_cnty <- read_sf(here("data_private","ca_county_basic_geography.shp"))
+head(ca_cnty)
+```
+
+- Add inner join between the shell Shapefile and df for outages
+
+```{r}
+major_outage_shp <- ca_cnty %>%
+    left_join(major_outage, by = c("NAME" = "County")) %>%
+    replace_na(list(Count = 0, SumMaxCust = 0))
+```
+
+```{r}
+severe_outage_shp <- ca_cnty %>%
+    left_join(severe_outage, by = c("NAME" = "County")) %>%
+    replace_na(list(Count = 0, SumMaxCust = 0))
+```
+
+```{r}
+extreme_outage_shp <- ca_cnty %>%
+    left_join(extreme_outage, by = c("NAME" = "County")) %>%
+    replace_na(list(Count = 0, SumMaxCust = 0))
+```
+
+## Write results as Shapefiles
+
+```{r}
+st_write(major_outage_shp, here("result","ca_county_power_disruption_major.shp"), 
+         delete_layer = TRUE)
+
+st_write(severe_outage_shp, here("result","ca_county_power_disruption_severe.shp"), 
+         delete_layer = TRUE)
+
+st_write(extreme_outage_shp, here("result","ca_county_power_disruption_extreme.shp"), 
+         delete_layer = TRUE)
+```

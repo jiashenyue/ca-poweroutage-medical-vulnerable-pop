@@ -1,0 +1,249 @@
+---
+title: "Spatial patterns of wildfire-induced power outages at different lengths"
+author: Shenyue Jia
+output: html_notebook
+---
+
+This notebook produces a bivariate map showing the customers affected of each county and the number of wildfire-induced power outages at different length they may have experienced in 2019.
+
+```{r setup, include=FALSE}
+library(rstudioapi)
+library(tidyverse) # ggplot2, dplyr, tidyr, readr, purrr, tibble
+library(magrittr) # pipes
+library(lintr) # code linting
+library(sf) # spatial data handling
+library(viridis) # viridis color scale
+library(cowplot) # stack ggplots
+library(rmarkdown)
+library(here)
+library(hrbrthemes)
+library(ggExtra)
+library(rgeoda)
+```
+
+```{r}
+rm(list = ls())
+```
+
+# Prepare data for bivariate mapping
+
+- Read Shapefiles of counties with different lengths of power outages
+    - Major: < 1 day
+    - Severe: 1-3 days
+    - Extreme: 3+ days
+
+```{r warning=FALSE, message=FALSE}
+major_df <- read_sf(here("result","ca_county_power_disruption_major.shp"))
+
+severe_df <- read_sf(here("result","ca_county_power_disruption_severe.shp"))
+
+extreme_df <- read_sf(here("result","ca_county_power_disruption_extreme.shp"))
+
+```
+
+- Create a data frame with count of severe and extreme events added up
+```{r warning=FALSE, message=FALSE}
+
+major_df %<>%
+  mutate(Count = Count,
+         Customers = SumMaxCust,
+         DurationType = "< 1 day",
+         Label = "Major") %>%
+  select(NAME,Count,Customers,DurationType,Label)
+
+
+severe_df %<>%
+  mutate(Count = Count,
+         Customers = SumMaxCust,
+         DurationType = "1-3 days",
+         Label = "Severe")
+
+extreme_df %<>%
+  mutate(Count = Count,
+         Customers = SumMaxCust,
+         DurationType = "3+ days",
+         Label = "Extremme")
+
+severe_extreme_df <- inner_join(severe_df %>% as.data.frame(), extreme_df %>% as.data.frame(), 
+                                by = "GEOID")
+
+severe_extreme_df %<>% st_sf(sf_column_name = 'geometry.x')
+
+severe_extreme_df %<>%
+  mutate(NAME = NAME.x,
+         Count = Count.x+Count.y,
+         Customers = SumMaxCust.x+SumMaxCust.y,
+         DurationType = "1 day+",
+         Label = "Severe and extreme") %>%
+  select(NAME,Count,Customers,DurationType,Label)
+
+  
+```
+
+# Create bivariate plot
+
+- Define a mapping theme
+```{r}
+
+theme_map <- function(...) {
+  theme_ipsum()+
+  # theme_bw()+
+  theme(
+    # text = element_text(family = default_font_family,
+    #                     color = default_font_color),
+    # remove all axes
+    axis.line = element_blank(),
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank(),
+    # add a subtle grid
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    # background colors
+    plot.background = element_rect(
+      fill = NULL,
+                                   color = NA),
+    panel.background = element_rect(
+      fill = NULL,
+                                    color = NA),
+    legend.background = element_rect(
+      fill = NULL,
+                                     color = NA),
+    # borders and margins
+    plot.margin = unit(c(0,0,0,0), "cm"),
+    panel.border = element_blank(),
+    panel.spacing = unit(c(0,0,0,0), "cm"),
+    # titles
+    legend.title = element_text(size = 11),
+    legend.text = element_text(
+      # color = default_font_color,
+      size = 9, hjust = 0),
+    plot.title = element_text(
+      # color = default_font_color,
+    size = 20, hjust = 0.5),
+    plot.subtitle = element_text(size = 10, hjust = 0.5,
+                                 # color = default_font_color,
+                                 margin = margin(b = -0.1,
+                                                 t = -0.1,
+                                                 l = 2,
+                                                 unit = "cm"),
+                                 debug = F),
+    # captions
+    plot.caption = element_text(size = 7,
+                                hjust = .5,
+                                margin = margin(t = 0.2,
+                                                b = 0,
+                                                unit = "cm"),
+                                color = "#939184"),
+    ...
+  )
+}
+```
+
+- Create a bivariate map color scheme
+```{r message=FALSE, warning=FALSE}
+source(here("code","bivariant_functions.R"))
+bivariant_color_scale_major_df <- generate_bivariant_color_df(
+                                                   major_df$Customers,
+                                                   major_df$Count)
+```
+
+- Attach the bivariate color scheme to the major power outage event dataframe (`major_df`)
+
+```{r}
+major_df <- attach_color_df(major_df,
+                      bivariant_color_scale_major_df,
+                      major_df$Customers,
+                      major_df$Count)
+# major_df$var1_breaks <- severe_extreme_df$var1_breaks
+
+major_df_bivariant_legend_df <- 
+  generate_bivarant_legend_df(bivariant_color_scale_major_df,
+                                                   major_df$Customers,
+                                                   major_df$Count)
+
+# major_df_bivariant_legend_df$var1_label <- severe_extreme_df_bivariant_legend_df$var1_label
+```
+
+- Attach the bivariate color scheme to the severe and extreme power outage event dataframe (`major_df`)
+```{r message=FALSE, warning=FALSE}
+# source(here("code","bivariant_functions.R"))
+bivariant_color_scale_severe_extreme_df <- generate_bivariant_color_df(
+                                                   # severe_extreme_df$Customers,
+                                                   major_df$Customers,
+                                                   severe_extreme_df$Count)
+```
+
+```{r}
+severe_extreme_df <- attach_color_df(severe_extreme_df,
+                      bivariant_color_scale_severe_extreme_df,
+                      # severe_extreme_df$Customers,
+                      major_df$Customers,
+                      severe_extreme_df$Count)
+
+severe_extreme_df_bivariant_legend_df <- generate_bivarant_legend_df(bivariant_color_scale_severe_extreme_df,
+                                                   # severe_extreme_df$Customers,
+                                                   major_df$Customers,
+                                                   severe_extreme_df$Count)
+```
+
+## Plot the bivariate legend
+
+- For severe and extreme events
+```{r message=FALSE, warning=FALSE}
+legend_severe_extreme <- bivariant_legend_plot(severe_extreme_df_bivariant_legend_df)
+legend_severe_extreme
+```
+
+- For major events
+```{r message=FALSE, warning=FALSE}
+legend_major <- bivariant_legend_plot(major_df_bivariant_legend_df)
+legend_major
+```
+
+## Plot bivariate maps
+
+- For severe and extreme events
+```{r message=FALSE, warning=FALSE}
+
+map_severe_extreme <- bivariant_map_plot(severe_extreme_df,
+                                 "3+ Days Power Disruptions")
+map_severe_extreme
+```
+- For major events
+```{r}
+
+map_major <- bivariant_map_plot(major_df,
+                                "1-3 Days Power Disruptions")
+map_major
+```
+
+
+## Combine maps and legends
+
+- Create a 2x2 plot
+- Adjust space between panels
+
+```{r}
+combined_plot_aligned <- plot_grid(
+  plot_grid(map_major, map_severe_extreme, ncol = 2, rel_widths = c(1, 1), 
+            align = "hv", axis = "tb"),
+  plot_grid(legend_major, legend_severe_extreme, ncol = 2, rel_widths = c(1, 1), 
+            align = "hv", axis = "tb"),
+  nrow = 2,
+  rel_heights = c(3, 1)  # Adjust the heights as needed
+)
+
+```
+
+- Save plot as PNG
+```{r}
+ggsave(
+  here("plot", "01_bivariate_map_3day_cutoff.png"),
+  plot = combined_plot_aligned,
+  width = 9,
+  height = 10,
+  # dpi = 200,
+  scale = 1
+)
+```

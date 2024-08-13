@@ -115,17 +115,17 @@ generate_bivarant_legend_df <- function(bivariant_color_scale,
     var1_label <- format((plyr::round_any(breaks_var1,1000))/1000,
                          big.mark = ",")
     var1_label <- c(
-        paste0("High: >",var1_label[3]),
-        paste0("Moderate: ",var1_label[2],"-",var1_label[3]),
-        paste0("Low: <",var1_label[2]),
+        paste0("High (>",var1_label[3],")"),
+        paste0("Moderate (",var1_label[2],"-",var1_label[3],")"),
+        paste0("Low (<",var1_label[2],")"),
         "","","","","","")
     
     
     var2_label <- format(breaks_var2,
                          big.mark = ",")
-    var2_label <- c(paste0("High: >",var2_label[3]),"","",
-                    paste0("Moderate: ",var2_label[2],"-",var2_label[3]),"","",
-                    paste0("Low: <",var2_label[2]),"",""
+    var2_label <- c(paste0("High (>",var2_label[3],")"),"","",
+                    paste0("Moderate (",var2_label[2],"-",var2_label[3],")"),"","",
+                    paste0("Low (<",var2_label[2],")"),"",""
                     )
     
 
@@ -151,8 +151,10 @@ bivariant_legend_plot <- function(bivariant_legend_df){
                 fill = fill)
         ) +
         scale_fill_identity() +
-        labs(x = "Customers affected (K)",
-             y = "Power disruptions")+
+        labs(x = "Number Customers affected (thousands)",
+             y = "Number of Power disruptions")+
+        # labs(x = "",
+        #      y = "")+
         # theme_ipsum() +
         theme_bw()+
         # make font big enough

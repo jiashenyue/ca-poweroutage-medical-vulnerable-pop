@@ -1759,12 +1759,22 @@ data</h1>
 from poweroutage.us to long forms by county and city.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBsb2FkaW5nIGxpYnJhcmllc1xubGlicmFyeSh0aWR5dmVyc2UpXG5saWJyYXJ5KGx1YnJpZGF0ZSlcbmxpYnJhcnkoem9vKVxubGlicmFyeShmb3JlaWduKVxubGlicmFyeShoZXJlKVxubGlicmFyeShiYXllc3Rlc3RSKVxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBsb2FkaW5nIGxpYnJhcmllc1xubGlicmFyeSh0aWR5dmVyc2UpXG5saWJyYXJ5KGx1YnJpZGF0ZSlcbmxpYnJhcnkoem9vKVxuYGBgIn0= -->
 <pre class="r"><code># loading libraries
 library(tidyverse)
 library(lubridate)
-library(zoo)
-library(foreign)
+library(zoo)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiXG5BdHRhY2hpbmcgcGFja2FnZTog4oCYem9v4oCZXG5cblRoZSBmb2xsb3dpbmcgb2JqZWN0cyBhcmUgbWFza2VkIGZyb20g4oCYcGFja2FnZTpiYXNl4oCZOlxuXG4gICAgYXMuRGF0ZSwgYXMuRGF0ZS5udW1lcmljXG4ifQ== -->
+<pre><code>
+Attaching package: ‘zoo’
+
+The following objects are masked from ‘package:base’:
+
+    as.Date, as.Date.numeric</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShmb3JlaWduKVxubGlicmFyeShoZXJlKVxubGlicmFyeShiYXllc3Rlc3RSKVxuYGBgIn0= -->
+<pre class="r"><code>library(foreign)
 library(here)
 library(bayestestR)</code></pre>
 <!-- rnb-source-end -->
@@ -1799,14 +1809,14 @@ library(bayestestR)</code></pre>
     select(-US_State_FIPS, -US_County_FIPS, -FullFIPSid)
 )</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiUm93czogMTIyNTA4OSBDb2x1bW5zOiA34pSA4pSAIENvbHVtbiBzcGVjaWZpY2F0aW9uIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgFxuRGVsaW1pdGVyOiBcIixcIlxuY2hyICAoNCk6IFV0aWxpdHlOYW1lLCBTdGF0ZU5hbWUsIENvdW50eU5hbWUsIENpdHlOYW1lXG5kYmwgICgyKTogQ3VzdG9tZXJzVHJhY2tlZCwgQ3VzdG9tZXJzT3V0XG5kdHRtICgxKTogUmVjb3JkZWREYXRlVGltZVxu4oS5IFVzZSBgc3BlYygpYCB0byByZXRyaWV2ZSB0aGUgZnVsbCBjb2x1bW4gc3BlY2lmaWNhdGlvbiBmb3IgdGhpcyBkYXRhLlxu4oS5IFNwZWNpZnkgdGhlIGNvbHVtbiB0eXBlcyBvciBzZXQgYHNob3dfY29sX3R5cGVzID0gRkFMU0VgIHRvIHF1aWV0IHRoaXMgbWVzc2FnZS5Sb3dzOiA5ODY3OSBDb2x1bW5zOiAxMOKUgOKUgCBDb2x1bW4gc3BlY2lmaWNhdGlvbiDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIBcbkRlbGltaXRlcjogXCIsXCJcbmNociAgKDYpOiBVdGlsaXR5TmFtZSwgU3RhdGVOYW1lLCBDb3VudHlOYW1lLCBDaXR5TmFtZSwgVVNfQ291bnR5X0ZJUFMsIEZ1bGxGSVBTaWRcbmRibCAgKDMpOiBVU19TdGF0ZV9GSVBTLCBDdXN0b21lcnNUcmFja2VkLCBDdXN0b21lcnNPdXRcbmR0dG0gKDEpOiBSZWNvcmRlZERhdGVUaW1lXG7ihLkgVXNlIGBzcGVjKClgIHRvIHJldHJpZXZlIHRoZSBmdWxsIGNvbHVtbiBzcGVjaWZpY2F0aW9uIGZvciB0aGlzIGRhdGEuXG7ihLkgU3BlY2lmeSB0aGUgY29sdW1uIHR5cGVzIG9yIHNldCBgc2hvd19jb2xfdHlwZXMgPSBGQUxTRWAgdG8gcXVpZXQgdGhpcyBtZXNzYWdlLlxuIn0= -->
-<pre><code>Rows: 1225089 Columns: 7── Column specification ─────────────────────────────────────────────────────────────────────────────────────────
+<!-- rnb-output-begin eyJkYXRhIjoiUm93czogMTIyNTA4OSBDb2x1bW5zOiA34pSA4pSAIENvbHVtbiBzcGVjaWZpY2F0aW9uIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgFxuRGVsaW1pdGVyOiBcIixcIlxuY2hyICAoNCk6IFV0aWxpdHlOYW1lLCBTdGF0ZU5hbWUsIENvdW50eU5hbWUsIENpdHlOYW1lXG5kYmwgICgyKTogQ3VzdG9tZXJzVHJhY2tlZCwgQ3VzdG9tZXJzT3V0XG5kdHRtICgxKTogUmVjb3JkZWREYXRlVGltZVxu4oS5IFVzZSBgc3BlYygpYCB0byByZXRyaWV2ZSB0aGUgZnVsbCBjb2x1bW4gc3BlY2lmaWNhdGlvbiBmb3IgdGhpcyBkYXRhLlxu4oS5IFNwZWNpZnkgdGhlIGNvbHVtbiB0eXBlcyBvciBzZXQgYHNob3dfY29sX3R5cGVzID0gRkFMU0VgIHRvIHF1aWV0IHRoaXMgbWVzc2FnZS5Sb3dzOiA5ODY3OSBDb2x1bW5zOiAxMOKUgOKUgCBDb2x1bW4gc3BlY2lmaWNhdGlvbiDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIBcbkRlbGltaXRlcjogXCIsXCJcbmNociAgKDYpOiBVdGlsaXR5TmFtZSwgU3RhdGVOYW1lLCBDb3VudHlOYW1lLCBDaXR5TmFtZSwgVVNfQ291bnR5X0ZJUFMsIEZ1bGxGSVBTaWRcbmRibCAgKDMpOiBVU19TdGF0ZV9GSVBTLCBDdXN0b21lcnNUcmFja2VkLCBDdXN0b21lcnNPdXRcbmR0dG0gKDEpOiBSZWNvcmRlZERhdGVUaW1lXG7ihLkgVXNlIGBzcGVjKClgIHRvIHJldHJpZXZlIHRoZSBmdWxsIGNvbHVtbiBzcGVjaWZpY2F0aW9uIGZvciB0aGlzIGRhdGEuXG7ihLkgU3BlY2lmeSB0aGUgY29sdW1uIHR5cGVzIG9yIHNldCBgc2hvd19jb2xfdHlwZXMgPSBGQUxTRWAgdG8gcXVpZXQgdGhpcyBtZXNzYWdlLlxuIn0= -->
+<pre><code>Rows: 1225089 Columns: 7── Column specification ───────────────────────────────────────────────────────────────────────────────────────────────
 Delimiter: &quot;,&quot;
 chr  (4): UtilityName, StateName, CountyName, CityName
 dbl  (2): CustomersTracked, CustomersOut
 dttm (1): RecordedDateTime
 ℹ Use `spec()` to retrieve the full column specification for this data.
-ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.Rows: 98679 Columns: 10── Column specification ─────────────────────────────────────────────────────────────────────────────────────────
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.Rows: 98679 Columns: 10── Column specification ───────────────────────────────────────────────────────────────────────────────────────────────
 Delimiter: &quot;,&quot;
 chr  (6): UtilityName, StateName, CountyName, CityName, US_County_FIPS, FullFIPSid
 dbl  (3): US_State_FIPS, CustomersTracked, CustomersOut
@@ -1857,6 +1867,13 @@ ca_data$CountyName[which(ca_data$CountyName == &quot;Unknown&quot; &amp;
   group_by(UtilityName) %&gt;%
   summarize(count = n())</code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbInRibF9kZiIsInRibCIsImRhdGEuZnJhbWUiXSwibnJvdyI6MiwibmNvbCI6Miwic3VtbWFyeSI6eyJBIHRpYmJsZSI6WyIyIMOXIDIiXX19LCJyZGYiOiJINHNJQUFBQUFBQUFBMTFRUFUvRE1CQzlmQlUxcUlERXh1US9rQ3d3c0pmQ1ZJU0FTbDJOazFBTDl4dzVqcUFidjRNZjIyQW5OaEwyNEx0NzkrNmVuNS92dHRmNU5nZUFCTklrZ2lRektXU2IxL3ZpRmlDTlRSRkJDbk1idnd6cDBpUVd2QmpqMUNCUGxQR0dNL0pBTzBLeElpdFJNNjBNc0pUN2x1TEI4YTVlWks5M3RVS3lwSUkzVWlHblpGWHhUcUxwTHFiTlAydUEyVHFRenBEdTZ5NlFQZDFvTHJnK1BKcWU1ekhab3c2RzUwcCtsbjdCcVBKdHJtRVlqcUVLRTdUektoN01LNnBwMlNnckFoQ09uTWhXYzRsbUtMWS9rd1hEa1FxQTh4N3RTNnFDN1hyOEtHNnN3TmllenNMbDhmL2NTc2FEVzVXNVZiTWEzem4rT1JmMHJSYXVPRE9PUjhObHE3ajVEK2ZFb0YycHBhYWVsek1wUERKNmcrTXZxNFdBckJBQ0FBQT0ifQ== -->
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["UtilityName"],"name":[1],"type":["chr"],"align":["left"]},{"label":["count"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"Pacific Gas and Electric Company","2":"39501"},{"1":"Southern California Edison","2":"1613"}],"options":{"columns":{"min":{},"max":[10],"total":[2]},"rows":{"min":[10],"max":[10],"total":[2]},"pages":{}}}
+  </script>
+</div>
+<!-- rnb-frame-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 </div>
@@ -1905,7 +1922,7 @@ issues in <code>CountyName</code> field.</p>
   group_by(UtilityName) %&gt;%
   summarize(count = n())</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbInRibF9kZiIsInRibCIsImRhdGEuZnJhbWUiXSwibnJvdyI6MCwibmNvbCI6Miwic3VtbWFyeSI6eyJBIHRpYmJsZSI6WyIwIMOXIDIiXX19LCJyZGYiOiJINHNJQUFBQUFBQUFBMjFRdXc3Q01BeDAwd2JVSWg0UzM5RU9zUEFCaUpFQmdjUWFTb0dJa0tBMkZmRHpnTk1tSUNLeTJENmZ6NzZzNXR0cHNrMEFJSVFvRENDa21BTGRyQmZwRENBaVdBUVFRV3ppSFVsalRBdzRndmIxMi9CRHBKSmRpc3FTaUFWN0c4MEYxNDhsOWh3dlY3WFUzbkJjcWx2bUJQNnE1NEpWVHQyQnlaNXBsaDFLSXc3dzlFYTY2cXE1a2poRXpQM1VHdzVLRHhqVzBseXdUL05UTGMvcHhDeG8ybC9QZms3YWxlUmxwYWlWNmhUeXlPWEhzV0M3UXRoaWdFNGJvOW0xNVBnUDFnbWlWYWFWWm82WDVFbzRwUEVHenpmU0d3N3R0Z0VBQUE9PSJ9 -->
+<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbInRibF9kZiIsInRibCIsImRhdGEuZnJhbWUiXSwibnJvdyI6MCwibmNvbCI6Miwic3VtbWFyeSI6eyJBIHRpYmJsZSI6WyIwIMOXIDIiXX19LCJyZGYiOiJINHNJQUFBQUFBQUFBMjFRVFF2Q01Bek51bFhaeEEvd2Qyd1hRZndCNHRHREtIaXRjMnF4dHJKMXFIOWVUYmRXc2RoTGtwZVhsN3l1NXR0SnNrMEFJSVFvRENDa21BTGRyQmZwRENBaVdBUVFRV3ppSFVsalRBdzRndmIxMi9CRHBKSmRpc3FTaUFWN0c4MEYxNDhsOWh3dlY3WFUzbkJjcWx2bUJQNnE1NEpWVHQyQnlaNXBsaDFLSXc3dzlFYTY2cXE1a2poRXpQM1VHdzVLRHhqVzBseXdUL05UTGMvcDFDeG8ybC9QZms3YWxlUmxwYWlWNmhUeXlPWEhzV0M3UXRoaWdFNGJvOW0xNVBnUDFnbWlWYWFWWm82WDVFbzRwUEVHenpjYmxRZTd0Z0VBQUE9PSJ9 -->
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
 {"columns":[{"label":["UtilityName"],"name":[1],"type":["chr"],"align":["left"]},{"label":["count"],"name":[2],"type":["int"],"align":["right"]}],"data":[],"options":{"columns":{"min":{},"max":[10],"total":[2]},"rows":{"min":[10],"max":[10],"total":[0]},"pages":{}}}
@@ -2059,7 +2076,7 @@ ca_data &lt;- ca_data %&gt;%
 </ul>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY291bnR5X25hbWVzIDwtIGFzLmNoYXJhY3RlcihsZXZlbHMoYXMuZmFjdG9yKGNhX2RhdGEkQ291bnR5TmFtZSkpKVxubl9jb3VudHkgPC0gbGVuZ3RoKGNvdW50eV9uYW1lcylcblxuZm9yIChpIGluIDE6bl9jb3VudHkpe1xuICAjIGkgPSA5XG4gIGxvbmdfZm9ybSA8LSByZXR1cm5fY291bnR5X2xvbmdmb3JtKGNhX2RhdGEsIGNvdW50eV9uYW1lc1tpXSlcbiAgXG4gICMgT25seSBrZWVwIGRhdGEgaW4gMjAxOVxuICBsb25nX2Zvcm0gPC0gbG9uZ19mb3JtICU+JVxuICAgIGZpbHRlcihsdWJyaWRhdGU6OnllYXIoZGF0ZSkgJWluJSAyMDE5KVxuICBcbiAgIyBBZ2dyZWdhdGUgdG8gY291bnR5IGxldmVsXG4gIGxvbmdfZm9ybV9jb3VudHkgPC0gbG9uZ19mb3JtICU+JVxuICAgICAgZ3JvdXBfYnkoZGF0ZSkgJT4lXG4gICAgICBzdW1tYXJpc2UoQ291bnR5TmFtZSA9IGZpcnN0KENvdW50eU5hbWUpLFxuICAgICAgICAgICAgICAgIEN1c3RvbWVyc091dCA9IHN1bShDdXN0b21lcnNPdXRfTkEsbmEucm0gPSBUUlVFKSkgJT4lXG4gICAgICBhcnJhbmdlKGRhdGUsQ291bnR5TmFtZSxDdXN0b21lcnNPdXQpXG5cbiAgcHJpbnQocGFzdGUoXCJXcml0aW5nXCIsY291bnR5X25hbWVzW2ldLFwiTG9uZyBGb3JtXCIpKVxuICBcbiAgIyBTYXZlIHRoZSBhZ2dyZWdhdGVkIHZlcnNpb24gdG8gQ1NWXG4gIHdyaXRlX2Nzdihsb25nX2Zvcm1fY291bnR5LCBmaWxlID0gaGVyZShcbiAgICBcImRhdGFfcHJpdmF0ZVwiLFxuICAgIFwibG9uZ19mb3JtX21pc3NpbmdfZmxnX2ZpeGVkX2NvdW50eVwiLFxuICAgIHBhc3RlMChjb3VudHlfbmFtZXNbaV0sXCJfbG9uZ19mb3JtLmNzdlwiKSkpXG4gIFxuICAjIFNhdmUgdGhlIGNpdHktbGV2ZWwgdmVyc2lvbiBhcyBSRFMgZm9ybWF0XG4gIHNhdmVSRFMobG9uZ19mb3JtLCBmaWxlID0gaGVyZShcImRhdGFfcHJpdmF0ZVwiLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXCJsb25nX2Zvcm1fbWlzc2luZ19mbGdfZml4ZWRfY2l0eVwiLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcGFzdGUwKGNvdW50eV9uYW1lc1tpXSxcIl9sb25nX2Zvcm0uUkRTXCIpKSlcbiAgXG4gIFxufVxuXG5cbmBgYCJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY291bnR5X25hbWVzIDwtIGFzLmNoYXJhY3RlcihsZXZlbHMoYXMuZmFjdG9yKGNhX2RhdGEkQ291bnR5TmFtZSkpKVxubl9jb3VudHkgPC0gbGVuZ3RoKGNvdW50eV9uYW1lcylcblxuZm9yIChpIGluIDE6bl9jb3VudHkpe1xuICAjIGkgPSA5XG4gIGxvbmdfZm9ybSA8LSByZXR1cm5fY291bnR5X2xvbmdmb3JtKGNhX2RhdGEsIGNvdW50eV9uYW1lc1tpXSlcbiAgXG4gICMgT25seSBrZWVwIGRhdGEgaW4gMjAxOVxuICBsb25nX2Zvcm0gPC0gbG9uZ19mb3JtICU+JVxuICAgIGZpbHRlcihsdWJyaWRhdGU6OnllYXIoZGF0ZSkgJWluJSAyMDE5KVxuICBcbiAgIyBBZ2dyZWdhdGUgdG8gY291bnR5IGxldmVsXG4gIGxvbmdfZm9ybV9jb3VudHkgPC0gbG9uZ19mb3JtICU+JVxuICAgICAgZ3JvdXBfYnkoZGF0ZSkgJT4lXG4gICAgICBzdW1tYXJpc2UoQ291bnR5TmFtZSA9IGZpcnN0KENvdW50eU5hbWUpLFxuICAgICAgICAgICAgICAgIEN1c3RvbWVyc091dCA9IHN1bShDdXN0b21lcnNPdXRfTkEsbmEucm0gPSBUUlVFKSkgJT4lXG4gICAgICBhcnJhbmdlKGRhdGUsQ291bnR5TmFtZSxDdXN0b21lcnNPdXQpXG5cbiAgcHJpbnQocGFzdGUoXCJXcml0aW5nXCIsY291bnR5X25hbWVzW2ldLFwiTG9uZyBGb3JtXCIpKVxuICBcbiAgIyBTYXZlIHRoZSBhZ2dyZWdhdGVkIHZlcnNpb24gdG8gQ1NWXG4gIHdyaXRlX2Nzdihsb25nX2Zvcm1fY291bnR5LCBmaWxlID0gaGVyZShcbiAgICBcImRhdGFfcHJpdmF0ZVwiLFxuICAgIFwibG9uZ19mb3JtX21pc3NpbmdfZmxnX2ZpeGVkX2NvdW50eVwiLFxuICAgIHBhc3RlMChjb3VudHlfbmFtZXNbaV0sXCJfbG9uZ19mb3JtLmNzdlwiKSkpXG4gIFxuICAjIFNhdmUgdGhlIGNpdHktbGV2ZWwgdmVyc2lvbiBhcyBSRFMgZm9ybWF0XG4gIHNhdmVSRFMobG9uZ19mb3JtLCBmaWxlID0gaGVyZShcImRhdGFfcHJpdmF0ZVwiLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXCJsb25nX2Zvcm1fbWlzc2luZ19mbGdfZml4ZWRfY2l0eVwiLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcGFzdGUwKGNvdW50eV9uYW1lc1tpXSxcIl9sb25nX2Zvcm0uUkRTXCIpKSlcbiAgXG4gIFxufVxuYGBgIn0= -->
 <pre class="r"><code>county_names &lt;- as.character(levels(as.factor(ca_data$CountyName)))
 n_county &lt;- length(county_names)
 
@@ -2092,9 +2109,21 @@ for (i in 1:n_county){
                                  paste0(county_names[i],&quot;_long_form.RDS&quot;)))
   
   
-}
-</code></pre>
+}</code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gYHJlZnJhbWUoKWA6XG7ihLkgSW4gYXJndW1lbnQ6IGBleHBhbmQoZGF0YSA9IHBpY2soZXZlcnl0aGluZygpKSwgLi4uLCAubmFtZV9yZXBhaXIgPSAubmFtZV9yZXBhaXIpYC5cbuKEuSBJbiBncm91cCAxOiBgVXRpbGl0eU5hbWUgPSBcIlBhY2lmaWMgR2FzIGFuZCBFbGVjdHJpYyBDb21wYW55XCJgLCBgU3RhdGVOYW1lID0gXCJDYWxpZm9ybmlhXCJgLCBgQ291bnR5TmFtZSA9XG4gIFwiQWxhbWVkYVwiYCwgYENpdHlOYW1lID0gXCJBbGJhbnlcImAuXG5DYXVzZWQgYnkgZXJyb3I6XG4hIG9iamVjdCAnVXRpbGl0eU5hbWUnIG5vdCBmb3VuZFxuQmFja3RyYWNlOlxuICAxLiBnbG9iYWwgcmV0dXJuX2NvdW50eV9sb25nZm9ybShjYV9kYXRhLCBjb3VudHlfbmFtZXNbaV0pXG4gMjAuIHRpZHlyOjpuZXN0aW5nKFV0aWxpdHlOYW1lLCBTdGF0ZU5hbWUsIENvdW50eU5hbWUsIENpdHlOYW1lKVxuIDIxLiB0aWR5cjo6OmdyaWRfZG90cyguLi4pXG4gMjIuIHJsYW5nOjpldmFsX3RpZHkoZG90LCBkYXRhID0gbWFzaylcbiJ9 -->
+<pre><code>Error in `reframe()`:
+ℹ In argument: `expand(data = pick(everything()), ..., .name_repair = .name_repair)`.
+ℹ In group 1: `UtilityName = &quot;Pacific Gas and Electric Company&quot;`, `StateName = &quot;California&quot;`, `CountyName =
+  &quot;Alameda&quot;`, `CityName = &quot;Albany&quot;`.
+Caused by error:
+! object &#39;UtilityName&#39; not found
+Backtrace:
+  1. global return_county_longform(ca_data, county_names[i])
+ 20. tidyr::nesting(UtilityName, StateName, CountyName, CityName)
+ 21. tidyr:::grid_dots(...)
+ 22. rlang::eval_tidy(dot, data = mask)</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 </div>
 

@@ -1,0 +1,255 @@
+---
+title: "Spatial patterns of wildfire-induced power outages at different lengths"
+author: Shenyue Jia
+output: html_notebook
+---
+
+This notebook produces a bivariate map showing the customers affected of each county and the number of wildfire-induced power outages at different length they may have experienced in 2019.
+
+```{r setup, include=FALSE}
+library(rstudioapi)
+library(tidyverse) # ggplot2, dplyr, tidyr, readr, purrr, tibble
+library(magrittr) # pipes
+library(lintr) # code linting
+library(sf) # spatial data handling
+library(viridis) # viridis color scale
+library(cowplot) # stack ggplots
+library(rmarkdown)
+library(here)
+library(hrbrthemes)
+library(ggExtra)
+library(rgeoda)
+```
+
+```{r}
+rm(list = ls())
+```
+
+# Prepare data for bivariate mapping
+
+- Read Shapefiles of counties with different lengths of power outages
+    - Small: < 1 day
+    - Big: >= 1 day
+
+```{r warning=FALSE, message=FALSE}
+small_df <- read_sf(here("result","ca_county_power_disruption_less_1day.shp"))
+
+big_df <- read_sf(here("result","ca_county_power_disruption_more_1day.shp"))
+
+```
+
+- Create a data frame with count of severe and extreme events added up
+```{r warning=FALSE, message=FALSE}
+
+small_df %<>%
+  mutate(Count = Count,
+         Customers = SumMaxCust,
+         DurationType = "< 12 hrs",
+         Label = "Small") %>%
+  select(NAME,Count,Customers,DurationType,Label)
+
+
+big_df %<>%
+  mutate(Count = Count,
+         Customers = SumMaxCust,
+         DurationType = ">= 12 hrs",
+         Label = "Big") %>%
+  select(NAME,Count,Customers,DurationType,Label)
+
+  
+```
+
+# Create bivariate plot
+
+- Define a mapping theme
+```{r}
+
+theme_map <- function(...) {
+  # theme_ipsum()+
+  theme_bw()+
+  theme(
+    # text = element_text(family = default_font_family,
+    #                     color = default_font_color),
+    # remove all axes
+    axis.line = element_blank(),
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank(),
+    # add a subtle grid
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    # background colors
+    plot.background = element_rect(
+      fill = NULL,
+                                   color = NA),
+    panel.background = element_rect(
+      fill = NULL,
+                                    color = NA),
+    legend.background = element_rect(
+      fill = NULL,
+                                     color = NA),
+    # borders and margins
+    plot.margin = unit(c(0,0,0,0), "cm"),
+    panel.border = element_blank(),
+    panel.spacing = unit(c(0,0,0,0), "cm"),
+    # titles
+    legend.title = element_text(size = 11),
+    legend.text = element_text(
+      # color = default_font_color,
+      size = 9, hjust = 0),
+    plot.title = element_text(
+      # color = default_font_color,
+        size = 15, hjust = 0.5),
+    plot.subtitle = element_text(size = 10, hjust = 0.5,
+                                 # color = default_font_color,
+                                 margin = margin(b = -0.1,
+                                                 t = -0.1,
+                                                 l = 2,
+                                                 unit = "cm"),
+                                 debug = F),
+    # captions
+    plot.caption = element_text(size = 7,
+                                hjust = .5,
+                                margin = margin(t = 0.2,
+                                                b = 0,
+                                                unit = "cm"),
+                                color = "#939184"),
+    ...
+  )
+}
+```
+
+- Create a bivariate map color scheme
+```{r message=FALSE, warning=FALSE}
+source(here("code","bivariant_functions.R"))
+bivariant_color_scale_small_df <- generate_bivariant_color_df(
+                                                   small_df$Customers,
+                                                   small_df$Count)
+```
+
+- Attach the bivariate color scheme to the major power outage event dataframe (`major_df`)
+
+```{r}
+small_df <- attach_color_df(small_df,
+                      bivariant_color_scale_small_df,
+                      small_df$Customers,
+                      small_df$Count)
+# major_df$var1_breaks <- severe_extreme_df$var1_breaks
+
+small_df_bivariant_legend_df <- 
+  generate_bivarant_legend_df(bivariant_color_scale_small_df,
+                                                   small_df$Customers,
+                                                   small_df$Count)
+
+# major_df_bivariant_legend_df$var1_label <- severe_extreme_df_bivariant_legend_df$var1_label
+```
+
+- Attach the bivariate color scheme to the severe and extreme power outage event dataframe (`major_df`)
+```{r message=FALSE, warning=FALSE}
+# source(here("code","bivariant_functions.R"))
+bivariant_color_scale_big_df <- generate_bivariant_color_df(
+                                                   # severe_extreme_df$Customers,
+                                                   small_df$Customers,
+                                                   big_df$Count)
+```
+
+```{r}
+big_df <- attach_color_df(big_df,
+                      bivariant_color_scale_big_df,
+                      # severe_extreme_df$Customers,
+                      small_df$Customers,
+                      big_df$Count)
+
+big_df_bivariant_legend_df <- generate_bivarant_legend_df(bivariant_color_scale_big_df,
+                                                   # severe_extreme_df$Customers,
+                                                   small_df$Customers,
+                                                   big_df$Count)
+```
+
+## Plot the bivariate legend
+
+- For big events
+```{r message=FALSE, warning=FALSE}
+legend_big <- bivariant_legend_plot(big_df_bivariant_legend_df)
+legend_big
+```
+
+- For small events
+```{r message=FALSE, warning=FALSE}
+legend_small <- bivariant_legend_plot(small_df_bivariant_legend_df)
+legend_small
+```
+
+## Plot bivariate maps
+
+- For big events
+```{r message=FALSE, warning=FALSE}
+
+map_big <- bivariant_map_plot(big_df,
+                                 ">= 1 day Power Disruptions")
+map_big
+```
+- For small events
+```{r}
+
+map_small <- bivariant_map_plot(small_df,
+                                "< 1 day Power Disruptions")
+map_small
+```
+
+
+## Combine maps and legends
+
+- Create a 2x2 plot
+- Adjust space between panels
+
+```{r}
+combined_plot_aligned <- plot_grid(
+  plot_grid(map_small, map_big, ncol = 2, rel_widths = c(1, 1), 
+            align = "hv", axis = "tb"),
+  plot_grid(legend_small, legend_big, ncol = 2, rel_widths = c(1, 1), 
+            align = "hv", axis = "tb"),
+  nrow = 2,
+  rel_heights = c(3, 1)  # Adjust the heights as needed
+)
+
+```
+
+- Save plot as PNG
+```{r}
+ggsave(
+  here("plot", "01_bivariate_map_1day_cutoff.png"),
+  plot = combined_plot_aligned,
+  width = 10,
+  height = 10,
+  # dpi = 200,
+  scale = 1
+)
+```
+
+- Create a 1x2 plot
+- Adjust space between panels
+
+```{r}
+combined_plot_aligned_1col <- plot_grid(
+  plot_grid(map_big, ncol = 1, rel_widths = c(1, 1), 
+            align = "hv", axis = "tb"),
+  plot_grid(legend_big, ncol = 1, rel_widths = c(1, 1), 
+            align = "hv", axis = "tb"),
+  nrow = 2,
+  rel_heights = c(3, 1)  # Adjust the heights as needed
+)
+
+```
+
+- Save plot as PNG
+```{r}
+ggsave(
+  here("plot", "01_bivariate_map_1day_cutoff_1col.png"),
+  plot = combined_plot_aligned_1col,
+  width = 7,
+  height = 10,
+  # dpi = 200,
+  scale = 1
+)
+```
