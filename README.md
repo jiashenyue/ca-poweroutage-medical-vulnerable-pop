@@ -5,6 +5,8 @@ A work of [CrisisReady](https://www.crisisready.io/) team
 
 Data and scripts for California 2019 power outage and medically vulnerable population analysis.
 
+![customers outage ts](https://github.com/jiashenyue/ca-poweroutage-medical-vulnerable-pop/blob/main/plot/02_ca_outage_timeseries.png)
+
 ## Data for analysis
 - Data of customers out of power
   - Purchased from [poweroutage.us](https://poweroutage.us/)
