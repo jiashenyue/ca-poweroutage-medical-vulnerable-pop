@@ -51,4 +51,10 @@ Data and scripts for California 2019 power outage and medically vulnerable popul
 
 ## Sample exhibits
 
-![image](https://github.com/jiashenyue/ca-poweroutage-medical-vulnerable-pop/blob/main/plot/01_bivariate_map.png)
+<img src="https://github.com/jiashenyue/ca-poweroutage-medical-vulnerable-pop/blob/main/plot/01_bivariate_map_3day_cutoff.png" alt="outage map" width="50%">
+
+## Publication
+
+Bedi NS, Jia S, Buckee C, Schroeder A, Balsari S. Power Outages: Implications for California's Medically Vulnerable Population. *Disaster Medicine and Public Health Preparedness*.
+Forthcoming.
+
